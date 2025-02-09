@@ -5,7 +5,7 @@
 
   [![Docker](https://badgen.net/badge/icon/docker?icon=docker&label)](https://www.docker.com/)
   ![License](https://img.shields.io/badge/license-Apache%202.0-blue)
-  ![Version](https://img.shields.io/badge/version-0.0.0-blue)
+  ![Version](https://img.shields.io/badge/version-0.0.1-blue)
   [![arXiv](https://img.shields.io/badge/arXiv-1234.56789-b31b1b.svg)](https://arxiv.org/abs/2501.11111)
   
   <br align="center">
@@ -17,9 +17,7 @@
 
 ## Concept
 
-We use reference maps in combination with classical LiDAR odometry to enable drift-free localization/mapping.  
-Our approach was developed for high-precision mapping. It enables georeferenced LiDAR-only point cloud mapping without GNSS.  
-A detailed description of our pipeline can be found in the linked paper.  
+We use reference maps in combination with classical LiDAR odometry to enable drift-free localization/mapping. Our approach was developed for high-precision mapping. It enables georeferenced LiDAR-only point cloud mapping without GNSS. A detailed description of our pipeline can be found in the linked paper.  
 
 <img src=doc/pipeline_diagram.png alt="diagram" width="480" />
 
