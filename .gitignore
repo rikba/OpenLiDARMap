@@ -1,0 +1,6 @@
+build/*
+python/build/*
+.vscode/*
+scripts/cpp/results/*
+scripts/cpp/data/*
+*.ini

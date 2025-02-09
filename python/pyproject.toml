@@ -1,0 +1,48 @@
+[build-system]
+requires = ["scikit_build_core", "pybind11"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "openlidarmap_pybind"
+version = "0.0.1"
+description = "Python bindings for OpenLiDARMap"
+readme = "../README.md"
+authors = [
+    {name = "Dominik Kulmer", email = "dominik.kulmer@tum.de"},
+]
+maintainers = [
+    {name = "Dominik Kulmer", email = "dominik.kulmer@tum.de"},
+]
+requires-python = ">=3.8"
+keywords = [
+    "LiDAR",
+    "Localization",
+    "Mapping",
+    "SLAM",
+]
+classifiers = [
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Other Audience",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache-2.0 License",
+    "Operating System :: Unix",
+    "Programming Language :: C++",
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "numpy",
+    "ninja",
+]
+
+[project.urls]
+Repository = "https://github.com/TUMFTM/OpenLiDARMap"
+
+[tool.scikit-build]
+build-dir = "build/{wheel_tag}"
+cmake.verbose = false
+cmake.minimum-version = "3.16"
+editable.mode = "redirect"
+editable.rebuild = true
+editable.verbose = false
+wheel.install-dir = "."

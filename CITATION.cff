@@ -1,0 +1,17 @@
+cff-version: 1.2.1
+preferred-citation:
+  title: "OpenLiDARMap: Zero-Drift Point Cloud Mapping using Map Priors"
+  doi: "10.48550/arXiv.2501.11111"
+  year: "2025"
+  type: article
+  url: https://arxiv.org/abs/2501.11111
+  codeurl: https://github.com/TUMFTM/OpenLiDARMap
+  authors:
+    - family-names: Kulmer
+      given-names: Dominik
+    - family-names: Leitenstern
+      given-names: Maximilian
+    - family-names: Weinmann
+      given-names: Marcel
+    - family-names: Lienkamp
+      given-names: Markus
