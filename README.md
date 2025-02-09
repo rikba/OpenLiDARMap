@@ -80,6 +80,14 @@ pip install -e .
 * Currently the visualization is active on default
 * Move to nanobind
 
+## Acknowledgement
+
+Great inspiration was taken from the following repositories. If you are using our work, please also leave a star at their repositories and cite their work.
+
+* [KISS-ICP](https://github.com/PRBonn/kiss-icp)
+* [small_gicp](https://github.com/koide3/small_gicp)
+* [Iridescence](https://github.com/koide3/iridescence)
+
 
 ## Citation
 
