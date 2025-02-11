@@ -5,7 +5,7 @@
 
   [![Docker](https://badgen.net/badge/icon/docker?icon=docker&label)](https://www.docker.com/)
   ![License](https://img.shields.io/badge/license-Apache%202.0-blue)
-  ![Version](https://img.shields.io/badge/version-0.0.1-blue)
+  ![Version](https://img.shields.io/badge/version-0.1.0-blue)
   [![arXiv](https://img.shields.io/badge/arXiv-1234.56789-b31b1b.svg)](https://arxiv.org/abs/2501.11111)
   
   <br align="center">
