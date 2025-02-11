@@ -4,7 +4,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "openlidarmap_pybind"
-version = "0.0.1"
+version = "0.1.0"
 description = "Python bindings for OpenLiDARMap"
 readme = "../README.md"
 authors = [
