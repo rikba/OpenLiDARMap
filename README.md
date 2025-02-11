@@ -17,7 +17,7 @@
 
 ## Concept
 
-We use reference maps in combination with classical LiDAR odometry to enable drift-free localization/mapping. Our approach was developed for high-precision mapping. It enables georeferenced LiDAR-only point cloud mapping without GNSS. A detailed description of our pipeline can be found in the linked paper.  
+We use reference maps in combination with classical LiDAR odometry to enable drift-free localization/mapping. Our approach is designed for high precision mapping. It enables georeferenced LiDAR-only point cloud mapping without GNSS. A detailed description of our pipeline can be found in the linked paper.
 
 <img src=doc/pipeline_diagram.png alt="diagram" width="480" />
 
@@ -26,7 +26,7 @@ We use reference maps in combination with classical LiDAR odometry to enable dri
 <details>
 <summary>Install</summary>
 
-We provide a Docker image on Docker Hub, which will automatically pulled within the Run section, but you also have the option to build is locally.  
+We provide a Docker image on Docker Hub, which will automatically be pulled within the Run section, but you also have the option to build it locally.  
 ```sh
 ./docker/build_docker.sh # (optional)
 ```
@@ -35,7 +35,7 @@ We provide a Docker image on Docker Hub, which will automatically pulled within 
 <details>
 <summary>Run</summary>
 
-To use our approach, you need a reference map and an initial guess for the first pose.
+To use our approach, you need a reference map and an initial guess of the first pose.
 
 The easiest way to use our approach is with the provided Docker image.
 ```sh
@@ -82,7 +82,7 @@ pip install -e .
 
 ## Acknowledgement
 
-Great inspiration was taken from the following repositories. If you are using our work, please also leave a star at their repositories and cite their work.
+Great inspiration has come from the following repositories. If you use our work, please also leave a star in their repositories and cite their work.
 
 * [KISS-ICP](https://github.com/PRBonn/kiss-icp)
 * [small_gicp](https://github.com/koide3/small_gicp)
