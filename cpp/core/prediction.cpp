@@ -4,7 +4,7 @@ namespace openlidarmap {
 
 Vector7d ConstantDistancePredictor::predict(const Vector7d &current_pose,
                                             const Vector7d &previous_pose) {
-    Vector7d predicted_pose;
+    Vector7d predicted_pose{};
 
     // Predict translation
     predicted_pose.head<3>() = predictTranslation(current_pose, previous_pose);
