@@ -1,4 +1,5 @@
 #include "pipeline/openlidarmap.hpp"
+#include "utils/helpers.hpp"
 
 #include <guik/viewer/async_light_viewer.hpp>
 #include <guik/viewer/light_viewer.hpp>
@@ -97,7 +98,7 @@ bool Pipeline::run() {
     guik::LightViewer *async_viewer = nullptr;
 
     try {
-        if (visualization_enabled_) {
+        if (config_.pipeline_.visualize) {
             async_viewer = guik::LightViewer::instance();
             if (!async_viewer) {
                 std::cerr << "Failed to initialize visualization" << std::endl;
@@ -134,12 +135,14 @@ bool Pipeline::run() {
         processing_thread_ = std::thread(&Pipeline::processingLoop, this);
 
         while (!stop_requested_) {
-            if (visualization_enabled_ && async_viewer) {
+            if (config_.pipeline_.visualize && async_viewer) {
                 if (!async_viewer->spin_once()) {
                     stop_requested_ = true;
                     break;
                 }
                 handleVisualizationControls(async_viewer);
+            } else {
+                utils::printProgressBar(progress_, current_processing_time_);
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
@@ -172,7 +175,7 @@ void Pipeline::processingLoop() {
                 break;
             }
 
-            if (visualization_enabled_) {
+            if (config_.pipeline_.visualize) {
                 updateVisualization(frame);
             }
 
@@ -276,7 +279,7 @@ Vector7d Pipeline::predictNextPose() {
 
 void Pipeline::updateVisualization(const small_gicp::PointCloud::Ptr &cloud) {
     std::lock_guard<std::mutex> lock(visualization_mutex_);
-    if (!visualization_enabled_ || !cloud) {
+    if (!config_.pipeline_.visualize || !cloud) {
         return;
     }
 

@@ -5,7 +5,7 @@
 
 namespace openlidarmap::utils {
 
-void printProgressBar(size_t current, size_t total);
+void printProgressBar(float progress, double processing_time);
 
 struct Stopwatch {
 public:

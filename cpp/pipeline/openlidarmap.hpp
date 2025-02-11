@@ -50,7 +50,6 @@ private:
     void updateVisualization(const small_gicp::PointCloud::Ptr &cloud);
     void handleVisualizationControls(guik::LightViewer *viewer);
     void waitIfPaused();
-    void setVisualizationEnabled(bool enabled) { visualization_enabled_ = enabled; };
     void processingLoop();
 
     config::Config config_{};
@@ -74,9 +73,8 @@ private:
     std::mutex visualization_mutex_;
     std::mutex viewer_mutex_;
     std::condition_variable pause_cv_;
-    std::atomic<bool> paused_{true};
+    std::atomic<bool> paused_{false};
     std::atomic<bool> stop_requested_{false};
-    bool visualization_enabled_{true};
     std::thread processing_thread_;
     double current_processing_time_{0.0};
     float progress_{0.0f};

@@ -51,6 +51,21 @@ We also provide Python bindings. Have a look in the `python` folder, where we pr
 
 </details>
 <details>
+<summary>Configure</summary>
+
+The configuration of this pipeline can be changed in the `cpp/config` files. The naming suggest the intended usecase for the files. The most important parameters to play with if your results are not as good as expected are:
+
+| Parameter | Description | Default | Note |
+| :-------- | :-------- | :--------: | :-------- |
+| pipeline_.visualize | Toggle GUI | `true` | use `false` on headless servers |
+| preprocess_.downsampling_resolution | Scans are voxelized before usage | `1.5` | Reduce the size for increased robustness |
+| preprocess_.num_neighbors | Points for covariance calculation | `10` | Try both directions |
+| registration_.voxel_resolution | Voxelhashmap voxel size | `1.0` | Reduce the size for increased robustness | 
+| registration_.lambda | Optimization dampening factor | `1.0` | Increase to increase the robustness |
+
+
+</details>
+<details>
 <summary>Develop</summary>
 
 We also provida a Development image, if you like to contribute or adapt or approach.  
