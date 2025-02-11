@@ -25,12 +25,13 @@ void PoseGraph::addConstraint(size_t idx_from,
             new ceres::AutoDiffCostFunction<AbsPoseError, 6, 7>(new AbsPoseError(measurement)),
             new ceres::TukeyLoss(1.0), poses_[idx_to].data());
         abs_residual_blocks_.emplace_back(abs_block_id);
+        problem_.SetManifold(poses_[idx_to].data(), pose_manifold_);
     } else {
         ceres::ResidualBlockId rel_block_id = problem_.AddResidualBlock(
             new ceres::AutoDiffCostFunction<RelPoseError, 6, 7, 7>(new RelPoseError(measurement)),
             new ceres::CauchyLoss(1.0), poses_[idx_from].data(), poses_[idx_to].data());
         rel_residual_blocks_.emplace_back(rel_block_id);
-
+        problem_.SetManifold(poses_[idx_from].data(), pose_manifold_);
         problem_.SetManifold(poses_[idx_to].data(), pose_manifold_);
     }
 

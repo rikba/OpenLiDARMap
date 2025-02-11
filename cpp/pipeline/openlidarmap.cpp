@@ -8,8 +8,9 @@ namespace openlidarmap::pipeline {
 
 Pipeline::Pipeline(const config::Config &config)
     : config_(config), scan2scan_config_(config), scan2map_config_(config) {
-    scan2scan_config_.registration_.removal_horizon = 100;
-    scan2map_config_.registration_.max_num_points_in_cell = 20;
+    preprocess_ = std::make_unique<Preprocess>(config_);
+    scan2map_config_.registration_.removal_horizon = 1e9;
+    scan2map_config_.registration_.max_num_points_in_cell = 100;
     scan2map_registration_ = std::make_unique<Registration>(scan2map_config_);
     scan2scan_registration_ = std::make_unique<Registration>(scan2scan_config_);
     pose_graph_ = std::make_unique<PoseGraph>(config_, poses_);
@@ -51,9 +52,12 @@ bool Pipeline::initialize(const std::string &map_path,
 bool Pipeline::initializeFirstPoses(const Vector7d &initial_pose) {
     // First frame scan2map
     auto first_frame = io::loadBIN_kitti(config_, scan_files_[0]);
+    small_gicp::estimate_covariances_tbb(*first_frame, config_.preprocess_.num_neighbors);
+    auto first_frame_processed = preprocess_->preprocess_cloud(first_frame);
+    small_gicp::estimate_covariances_tbb(*first_frame_processed, config_.preprocess_.num_neighbors);
 
     auto init_result = scan2map_registration_->register_frame(
-        first_frame, utils::PoseUtils::poseVectorToIsometry(initial_pose));
+        first_frame_processed, utils::PoseUtils::poseVectorToIsometry(initial_pose));
 
     // Initialize with scan2map result
     auto first_aligned_pose = utils::PoseUtils::isometryToPoseVector(init_result.T_target_source);
@@ -70,9 +74,11 @@ bool Pipeline::initializeFirstPoses(const Vector7d &initial_pose) {
 
     // Second frame scan2scan
     auto second_frame = io::loadBIN_kitti(config_, scan_files_[1]);
+    auto second_frame_processed = preprocess_->preprocess_cloud(second_frame);
+    small_gicp::estimate_covariances_tbb(*second_frame_processed, config_.preprocess_.num_neighbors);
 
     auto scan2scan_result = scan2scan_registration_->register_frame(
-        second_frame, utils::PoseUtils::poseVectorToIsometry(first_aligned_pose));
+        second_frame_processed, utils::PoseUtils::poseVectorToIsometry(first_aligned_pose));
 
     auto second_aligned_pose =
         utils::PoseUtils::isometryToPoseVector(scan2scan_result.T_target_source);
@@ -112,6 +118,17 @@ bool Pipeline::run() {
                     viewer->shader_setting().add("z_range", z_range);
                 }
             });
+            
+            // Map visualization
+            // auto map = scan2map_registration_->get_map();
+            // auto voxel_cloud = small_gicp::traits::voxel_points(*map);
+            // auto viewer_ptr = std::shared_ptr<guik::LightViewer>(async_viewer, [](guik::LightViewer *) {});
+            // std::vector<Eigen::Vector4d> points_copy(voxel_cloud.begin(), voxel_cloud.end());
+            // viewer_ptr->invoke(
+            //     [points = std::move(points_copy), pose = Eigen::Isometry3d::Identity(), viewer = viewer_ptr]() {
+            //     viewer->update_points("map", points,
+            //         guik::FlatWhite(Eigen::Isometry3d::Identity()));
+            //     });
         }
 
         processing_thread_ = std::thread(&Pipeline::processingLoop, this);
@@ -174,14 +191,17 @@ void Pipeline::processingLoop() {
     }
 }
 
-bool Pipeline::processFrame(const small_gicp::PointCloud::Ptr &frame) {
+bool Pipeline::processFrame(small_gicp::PointCloud::Ptr &frame) {
     if (!frame || frame->empty()) {
         return false;
     }
 
+    auto initial_guess = utils::PoseUtils::poseVectorToIsometry(poses_[pose_index_]);
+    auto processed_frame = preprocess_->preprocess_cloud(frame);
+
     // Scan-to-scan registration
     auto scan2scan_result = scan2scan_registration_->register_frame(
-        frame, utils::PoseUtils::poseVectorToIsometry(poses_[pose_index_]));
+        processed_frame, initial_guess);
 
     if (!utils::PoseUtils::isMoving(scan2scan_result.T_target_source, poses_[pose_index_ - 1],
                                     config_.pipeline_.translation_threshold,
@@ -192,7 +212,7 @@ bool Pipeline::processFrame(const small_gicp::PointCloud::Ptr &frame) {
 
     // Scan-to-map registration
     auto scan2map_result = scan2map_registration_->register_frame(
-        frame, utils::PoseUtils::poseVectorToIsometry(poses_[pose_index_]));
+        processed_frame, initial_guess);
 
     // Update pose graph
     updatePoseGraph(scan2map_result, scan2scan_result);
@@ -204,13 +224,29 @@ bool Pipeline::processFrame(const small_gicp::PointCloud::Ptr &frame) {
 
     // Update scan2scan target with optimized pose
     scan2scan_registration_->get_map()->distance_insert(
-        *frame, utils::PoseUtils::poseVectorToIsometry(poses_[pose_index_]));
+        *processed_frame, utils::PoseUtils::poseVectorToIsometry(poses_[pose_index_]));
+
+    // Adaptive kernel of KISS-ICP
+    const auto deviation = initial_guess.inverse() * utils::PoseUtils::poseVectorToIsometry(poses_[pose_index_]);
+    const double model_error = [&]() {
+        const double theta = Eigen::AngleAxisd(deviation.rotation().matrix()).angle();
+        const double delta_rot = 2.0 * 100.0 * std::sin(theta / 2.0);
+        const double delta_trans = deviation.translation().norm();
+        return delta_trans + delta_rot;
+    }();
+    scan2scan_config_.kernel_.model_sse += model_error * model_error;
+    scan2scan_config_.kernel_.num_samples++;
+    scan2scan_config_.kernel_.sigma = 
+        std::sqrt(scan2scan_config_.kernel_.model_sse / scan2scan_config_.kernel_.num_samples) / 3.0;
+    scan2scan_config_.registration_.max_dist_sq = (9.0 * scan2scan_config_.kernel_.sigma) * (9.0 * scan2scan_config_.kernel_.sigma);
+
+    scan2scan_registration_->update_config(scan2scan_config_);
 
     // Predict next pose
     addPose(predictNextPose());
-    pose_index_++;
 
-    kitti_poses_.emplace_back(poses_[pose_index_]);
+    kitti_poses_.emplace_back(poses_[pose_index_]);    
+    pose_index_++;
 
     return true;
 }
@@ -225,7 +261,7 @@ void Pipeline::updatePoseGraph(const small_gicp::RegistrationResult &scan2map_re
         pose_index_ - 1, pose_index_,
         utils::PoseUtils::isometryToPoseVector(scan2scan_result.T_target_source), false);
 
-    if (scan2map_result.num_inliers > 50) {
+    if (scan2map_result.num_inliers > config_.registration_.map_overlap) {
         pose_graph_->addConstraint(
             pose_index_, pose_index_,
             utils::PoseUtils::isometryToPoseVector(scan2map_result.T_target_source), true);
@@ -239,6 +275,7 @@ Vector7d Pipeline::predictNextPose() {
 }
 
 void Pipeline::updateVisualization(const small_gicp::PointCloud::Ptr &cloud) {
+    std::lock_guard<std::mutex> lock(visualization_mutex_);
     if (!visualization_enabled_ || !cloud) {
         return;
     }
@@ -247,8 +284,6 @@ void Pipeline::updateVisualization(const small_gicp::PointCloud::Ptr &cloud) {
     if (!async_viewer) {
         return;
     }
-
-    std::lock_guard<std::mutex> lock(visualization_mutex_);
 
     auto viewer_ptr = std::shared_ptr<guik::LightViewer>(async_viewer, [](guik::LightViewer *) {});
 
@@ -263,7 +298,7 @@ void Pipeline::updateVisualization(const small_gicp::PointCloud::Ptr &cloud) {
     }
 
     std::vector<Eigen::Vector4d> points_copy(voxel_cloud.begin(), voxel_cloud.end());
-    auto current_pose = poses_[pose_index_];
+    auto current_pose = poses_[pose_index_-1];
     auto pose_isometry = utils::PoseUtils::poseVectorToIsometry(current_pose);
 
     viewer_ptr->invoke(
@@ -295,6 +330,7 @@ void Pipeline::updateVisualization(const small_gicp::PointCloud::Ptr &cloud) {
 }
 
 void Pipeline::handleVisualizationControls(guik::LightViewer *viewer) {
+    std::lock_guard<std::mutex> lock(viewer_mutex_);
     if (!viewer) return;
 
     viewer->invoke([this] {

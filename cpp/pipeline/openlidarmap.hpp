@@ -11,6 +11,7 @@
 #include "config/config.hpp"
 #include "core/pose_graph.hpp"
 #include "core/prediction.hpp"
+#include "core/preprocess.hpp"
 #include "core/registration.hpp"
 #include "io/kitti_loader.hpp"
 #include "io/map_loader.hpp"
@@ -41,7 +42,7 @@ public:
 
 private:
     bool initializeFirstPoses(const Vector7d &initial_pose);
-    bool processFrame(const small_gicp::PointCloud::Ptr &frame);
+    bool processFrame(small_gicp::PointCloud::Ptr &frame);
     void updatePoseGraph(const small_gicp::RegistrationResult &scan2map_result,
                          const small_gicp::RegistrationResult &scan2scan_result);
     Vector7d predictNextPose();
@@ -55,6 +56,7 @@ private:
     config::Config config_{};
     config::Config scan2scan_config_{};
     config::Config scan2map_config_{};
+    std::unique_ptr<Preprocess> preprocess_{};
     std::unique_ptr<Registration> scan2map_registration_{};
     std::unique_ptr<Registration> scan2scan_registration_{};
     std::unique_ptr<PoseGraph> pose_graph_{};
@@ -70,9 +72,10 @@ private:
 
     std::mutex pause_mutex_;
     std::mutex visualization_mutex_;
+    std::mutex viewer_mutex_;
     std::condition_variable pause_cv_;
-    bool paused_{true};
-    bool stop_requested_{false};
+    std::atomic<bool> paused_{true};
+    std::atomic<bool> stop_requested_{false};
     bool visualization_enabled_{true};
     std::thread processing_thread_;
     double current_processing_time_{0.0};

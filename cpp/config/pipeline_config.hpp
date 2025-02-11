@@ -11,8 +11,8 @@ struct PipelineConfig {
     bool use_sliding_window{};
 
     PipelineConfig()
-        : translation_threshold(0.1),
-          rotation_threshold(0.1),
+        : translation_threshold(0.05),
+          rotation_threshold(0.05),
           sliding_window_size(250),
           use_sliding_window(true) {}
 };

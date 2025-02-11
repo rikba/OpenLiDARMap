@@ -28,6 +28,7 @@ add_library(
   core/registration.cpp
   core/pose_graph.cpp
   core/prediction.cpp
+  core/preprocess.cpp
   io/kitti_loader.cpp
   io/map_loader.cpp
   pipeline/openlidarmap.cpp
