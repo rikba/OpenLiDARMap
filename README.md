@@ -102,6 +102,7 @@ Great inspiration has come from the following repositories. If you use our work,
 * [KISS-ICP](https://github.com/PRBonn/kiss-icp)
 * [small_gicp](https://github.com/koide3/small_gicp)
 * [Iridescence](https://github.com/koide3/iridescence)
+* [Open3D](https://github.com/isl-org/Open3D)
 
 
 ## Citation
