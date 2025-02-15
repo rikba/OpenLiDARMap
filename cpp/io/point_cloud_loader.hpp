@@ -5,16 +5,16 @@
 
 #include "config/config.hpp"
 
-
 namespace openlidarmap::io {
 
 class PointCloudLoader {
 public:
     virtual ~PointCloudLoader() = default;
-    virtual small_gicp::PointCloud::Ptr load(const std::string& file_path) = 0;
+    virtual small_gicp::PointCloud::Ptr load(const std::string &file_path) = 0;
+
 protected:
-    explicit PointCloudLoader(config::Config& config) : config_(config) {}
-    config::Config& config_;
+    explicit PointCloudLoader(config::Config &config) : config_(config) {}
+    config::Config &config_;
 };
 
 }  // namespace openlidarmap::io

@@ -34,11 +34,16 @@ RUN apt-get update && apt-get install -y -q --no-install-recommends \
     wget \
     libeigen3-dev \
     libomp-dev \
+    libtbb-dev \
     libgoogle-glog-dev \
     libgflags-dev \
     libatlas-base-dev \
     libsuitesparse-dev \
+    python3-dev \
     python3-pip \
+    python3-setuptools \
+    python3-distutils \
+    pybind11-dev \
     liblzf-dev
 
 RUN pip install numpy ninja
@@ -52,7 +57,7 @@ RUN wget http://ceres-solver.org/ceres-solver-2.2.0.tar.gz && \
     cmake ../ceres-solver-2.2.0 && make -j3 && make test && make install
 
 # Irindescence
-RUN apt-get update && apt-get install -y -q --no-install-recommends curl gnupg
+RUN apt-get update && apt-get install -y -q --no-install-recommends curl gnupg libpng-dev libjpeg-dev
 RUN mkdir -m 0755 -p /etc/apt/keyrings/
 RUN curl -fsSL https://koide3.github.io/ppa/ubuntu2204/KEY.gpg | gpg --dearmor -o /etc/apt/keyrings/koide3_ppa.gpg
 RUN echo "deb [signed-by=/etc/apt/keyrings/koide3_ppa.gpg] https://koide3.github.io/ppa/ubuntu2204 ./" | tee /etc/apt/sources.list.d/koide3_ppa.list > /dev/null

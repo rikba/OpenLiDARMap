@@ -3,9 +3,11 @@
     <h2>Zero-Drift Point Cloud Mapping using Map Priors</h2>
   <br>
 
+  ![C++](https://img.shields.io/badge/-C++-blue?logo=cplusplus)
+  ![Python](https://img.shields.io/badge/Python-3670A0?logo=python&logoColor=ffdd54)
   [![Docker](https://badgen.net/badge/icon/docker?icon=docker&label)](https://www.docker.com/)
   ![License](https://img.shields.io/badge/license-Apache%202.0-blue)
-  ![Version](https://img.shields.io/badge/version-0.1.0-blue)
+  ![Version](https://img.shields.io/badge/version-0.2.0-blue)
   [![arXiv](https://img.shields.io/badge/arXiv-1234.56789-b31b1b.svg)](https://arxiv.org/abs/2501.11111)
   
   <br align="center">
@@ -91,9 +93,7 @@ pip install -e .
 
 ## Limitations
 
-* The reference map has to be in the .pcd format
-* Detailed instructions on how to create refrence maps is missing
-* Move to nanobind
+* Detailed instructions on how to create refrence maps are missing
 
 ## Acknowledgement
 

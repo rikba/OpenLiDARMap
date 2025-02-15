@@ -41,10 +41,11 @@ add_library(
   utils/pose_utils.cpp
   utils/helpers.cpp)
 
-target_include_directories(openlidarmap_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} PRIVATE ${small_gicp_INCLUDE_DIRS} ${LIBLZF_INCLUDE_DIR})
+target_include_directories(openlidarmap_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} PRIVATE ${small_gicp_INCLUDE_DIRS}
+                                                                                       ${LIBLZF_INCLUDE_DIR})
 
-target_link_libraries(openlidarmap_lib PUBLIC Eigen3::Eigen small_gicp Ceres::ceres
-                      PRIVATE Iridescence::Iridescence stdc++fs ${LIBLZF_LIBRARY})
+target_link_libraries(openlidarmap_lib PUBLIC Eigen3::Eigen small_gicp Ceres::ceres PRIVATE Iridescence::Iridescence
+                                                                                            stdc++fs ${LIBLZF_LIBRARY})
 
 # Add executable
 add_executable(openlidarmap_cpp apps/main.cpp)
