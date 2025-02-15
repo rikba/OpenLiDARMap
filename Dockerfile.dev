@@ -38,8 +38,8 @@ RUN apt-get update && apt-get install -y -q --no-install-recommends \
     libgflags-dev \
     libatlas-base-dev \
     libsuitesparse-dev \
-    libpcl-dev \
-    python3-pip
+    python3-pip \
+    liblzf-dev
 
 RUN pip install numpy ninja
 

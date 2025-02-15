@@ -14,8 +14,10 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 
 find_package(Eigen3 REQUIRED)
 find_package(Ceres REQUIRED)
-find_package(PCL REQUIRED)
 find_package(Iridescence REQUIRED)
+
+find_path(LIBLZF_INCLUDE_DIR lzf.h PATH_SUFFIXES liblzf)
+find_library(LIBLZF_LIBRARY NAMES lzf liblzf)
 
 # Fetch external dependencies
 include(FetchContent)
@@ -34,17 +36,15 @@ add_library(
   io/format/pcd.cpp
   io/format/ply.cpp
   io/loader_factory.cpp
-  io/map_loader.cpp
   pipeline/openlidarmap.cpp
   utils/file_utils.cpp
   utils/pose_utils.cpp
   utils/helpers.cpp)
 
-target_include_directories(openlidarmap_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} PRIVATE ${PCL_INCLUDE_DIRS}
-                                                                                           ${small_gicp_INCLUDE_DIRS})
+target_include_directories(openlidarmap_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} PRIVATE ${small_gicp_INCLUDE_DIRS} ${LIBLZF_INCLUDE_DIR})
 
-target_link_libraries(openlidarmap_lib PUBLIC Eigen3::Eigen small_gicp ${PCL_LIBRARIES} Ceres::ceres
-                      PRIVATE Iridescence::Iridescence stdc++fs)
+target_link_libraries(openlidarmap_lib PUBLIC Eigen3::Eigen small_gicp Ceres::ceres
+                      PRIVATE Iridescence::Iridescence stdc++fs ${LIBLZF_LIBRARY})
 
 # Add executable
 add_executable(openlidarmap_cpp apps/main.cpp)

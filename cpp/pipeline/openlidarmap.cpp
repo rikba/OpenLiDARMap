@@ -1,7 +1,6 @@
 #include "pipeline/openlidarmap.hpp"
 #include "utils/helpers.hpp"
 #include "io/loader_factory.hpp"
-#include "io/map_loader.hpp"
 
 #include <guik/viewer/async_light_viewer.hpp>
 #include <guik/viewer/light_viewer.hpp>
@@ -14,6 +13,8 @@ Pipeline::Pipeline(const config::Config &config)
     preprocess_ = std::make_unique<Preprocess>(config_);
     scan2map_config_.registration_.removal_horizon = 1e9;
     scan2map_config_.registration_.max_num_points_in_cell = 100;
+    scan2map_config_.preprocess_.min_range = -1e9;
+    scan2map_config_.preprocess_.max_range = 1e9;
     scan2map_registration_ = std::make_unique<Registration>(scan2map_config_);
     scan2scan_registration_ = std::make_unique<Registration>(scan2scan_config_);
     pose_graph_ = std::make_unique<PoseGraph>(config_, poses_);
@@ -36,7 +37,7 @@ bool Pipeline::initialize(const std::string &map_path,
     output_path_ = output_path;
 
     // Load and initialize map
-    auto map_cloud = io::loadPCD_map(map_path);
+    auto map_cloud = io::LoaderFactory::loadPointCloud(scan2map_config_, map_path);
     if (!scan2map_registration_->initialize(map_cloud, Eigen::Isometry3d::Identity())) {
         return false;
     }

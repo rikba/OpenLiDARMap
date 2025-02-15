@@ -80,10 +80,6 @@ small_gicp::PointCloud::Ptr PLYLoader::load(const std::string& file_path) {
         throw std::runtime_error("Missing XYZ coordinates in PLY file");
     }
 
-    // Add debug output for first few points
-    const int debug_points = 5;
-    int points_output = 0;
-
     if (header.is_binary) {
         // Read all properties per point
         std::vector<char> point_data(header.properties.size() * sizeof(float));

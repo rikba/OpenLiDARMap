@@ -4,7 +4,7 @@
 #include <vector>
 #include <cstring>
 #include <iomanip>
-
+#include <liblzf/lzf.h>
 
 namespace openlidarmap::io {
 
@@ -78,42 +78,6 @@ bool ParsePCDHeader(std::ifstream& file, PCDHeader& header) {
     return true;
 }
 
-double UnpackBinary(const char* data_ptr, char type, int size) {
-    switch (type) {
-        case 'F': {
-            if (size == 4) {
-                float value;
-                std::memcpy(&value, data_ptr, sizeof(float));
-                return static_cast<double>(value);
-            } else if (size == 8) {
-                double value;
-                std::memcpy(&value, data_ptr, sizeof(double));
-                return value;
-            }
-            break;
-        }
-        case 'I': {
-            switch (size) {
-                case 1: return static_cast<double>(*reinterpret_cast<const int8_t*>(data_ptr));
-                case 2: return static_cast<double>(*reinterpret_cast<const int16_t*>(data_ptr));
-                case 4: return static_cast<double>(*reinterpret_cast<const int32_t*>(data_ptr));
-                case 8: return static_cast<double>(*reinterpret_cast<const int64_t*>(data_ptr));
-            }
-            break;
-        }
-        case 'U': {
-            switch (size) {
-                case 1: return static_cast<double>(*reinterpret_cast<const uint8_t*>(data_ptr));
-                case 2: return static_cast<double>(*reinterpret_cast<const uint16_t*>(data_ptr));
-                case 4: return static_cast<double>(*reinterpret_cast<const uint32_t*>(data_ptr));
-                case 8: return static_cast<double>(*reinterpret_cast<const uint64_t*>(data_ptr));
-            }
-            break;
-        }
-    }
-    throw std::runtime_error("Unsupported PCD data type or size");
-}
-
 small_gicp::PointCloud::Ptr PCDLoader::load(const std::string& file_path) {
     std::ifstream file(file_path, std::ios::binary);
     if (!file) {
@@ -140,7 +104,6 @@ small_gicp::PointCloud::Ptr PCDLoader::load(const std::string& file_path) {
             throw std::runtime_error("Missing XYZ fields in PCD file");
         }
 
-        // Reset file position and search for DATA line
         file.clear();
         file.seekg(0);
         
@@ -182,6 +145,79 @@ small_gicp::PointCloud::Ptr PCDLoader::load(const std::string& file_path) {
             }
             points_read++;
         }
+    } else if (header.is_compressed) {
+        file.clear();
+        file.seekg(0);
+        
+        std::string line;
+        while (std::getline(file, line)) {
+            if (line.find("DATA binary_compressed") != std::string::npos) {
+                break;
+            }
+        }
+
+        uint32_t compressed_size = 0, uncompressed_size = 0;
+        if (!file.read(reinterpret_cast<char*>(&compressed_size), sizeof(compressed_size)) ||
+            !file.read(reinterpret_cast<char*>(&uncompressed_size), sizeof(uncompressed_size))) {
+            throw std::runtime_error("Failed to read size info");
+        }
+
+        // Allocate buffers
+        std::vector<char> compressed_data(compressed_size);
+        std::vector<char> uncompressed_data(uncompressed_size);
+
+        // Read compressed data
+        if (!file.read(compressed_data.data(), compressed_size)) {
+            throw std::runtime_error("Failed to read compressed data");
+        }
+
+        // Decompress using LZF
+        int result = lzf_decompress(
+            compressed_data.data(), compressed_size,
+            uncompressed_data.data(), uncompressed_size
+        );
+
+        if (result != uncompressed_size) {
+            throw std::runtime_error("LZF decompression failed");
+        }
+
+        // Points are stored field by field
+        int strip_size = header.points;
+        points.resize(header.points);
+
+        // Process each coordinate field
+        for (const auto& field : header.fields) {
+            const char* base_ptr = uncompressed_data.data() + field.offset * strip_size;
+            
+            if (field.name == "x") {
+                for (int i = 0; i < header.points; i++) {
+                    float value;
+                    std::memcpy(&value, base_ptr + i * field.size, sizeof(float));
+                    points[i][0] = value;
+                }
+            } else if (field.name == "y") {
+                for (int i = 0; i < header.points; i++) {
+                    float value;
+                    std::memcpy(&value, base_ptr + i * field.size, sizeof(float));
+                    points[i][1] = value;
+                }
+            } else if (field.name == "z") {
+                for (int i = 0; i < header.points; i++) {
+                    float value;
+                    std::memcpy(&value, base_ptr + i * field.size, sizeof(float));
+                    points[i][2] = value;
+                    points[i][3] = 1.0;
+                }
+            }
+        }
+
+        // Apply range filtering
+        auto it = std::remove_if(points.begin(), points.end(),
+            [this](const Eigen::Vector4d& p) {
+                const double norm = p.head<3>().norm();
+                return norm < config_.preprocess_.min_range || norm > config_.preprocess_.max_range;
+            });
+        points.erase(it, points.end());
     } else {
         std::string line;
         while (std::getline(file, line) && points.size() < header.points) {
