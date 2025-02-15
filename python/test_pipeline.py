@@ -6,7 +6,7 @@ import numpy as np
 test_data_dir = "/datasets/"
 
 map_path = os.path.join(test_data_dir, "flexblend/kitti/cropped_kitti_map_seq00_origin455_5424_m05.pcd")
-scans_dir = os.path.join(test_data_dir, "openlidarmap_plus_plus/data_odometry_velodyne/dataset/sequences/00/velodyne/") 
+scans_dir = os.path.join(test_data_dir, "openlidarmap_plus_plus/data_odometry_velodyne/dataset/sequences/00/velodyne/")
 output_path = os.path.join(test_data_dir, "out.txt")
 
 # With custom initial pose

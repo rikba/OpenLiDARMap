@@ -3,9 +3,11 @@
     <h2>Zero-Drift Point Cloud Mapping using Map Priors</h2>
   <br>
 
+  ![C++](https://img.shields.io/badge/-C++-blue?logo=cplusplus)
+  ![Python](https://img.shields.io/badge/Python-3670A0?logo=python&logoColor=ffdd54)
   [![Docker](https://badgen.net/badge/icon/docker?icon=docker&label)](https://www.docker.com/)
   ![License](https://img.shields.io/badge/license-Apache%202.0-blue)
-  ![Version](https://img.shields.io/badge/version-0.1.0-blue)
+  ![Version](https://img.shields.io/badge/version-0.2.0-blue)
   [![arXiv](https://img.shields.io/badge/arXiv-1234.56789-b31b1b.svg)](https://arxiv.org/abs/2501.11111)
   
   <br align="center">
@@ -35,9 +37,11 @@ We provide a Docker image on Docker Hub, which will automatically be pulled with
 <details>
 <summary>Run</summary>
 
-To use our approach, you need a reference map and an initial guess of the first pose.
+To use our approach, you need a reference map and an initial guess of the first pose.  
+More details on reference maps can be found in our paper.
 
-The easiest way to use our approach is with the provided Docker image.
+The easiest way to use our approach is with the provided Docker image.  
+We currently support point cloud files in `.bin`(KITTI), `.pcd`, `.ply` and `.xyz`.
 ```sh
 ./docker/run_docker.sh <map_path> <scan_path> <output_path> <x> <y> <z> <qx> <qy> <qz> <qw>
 
@@ -89,11 +93,7 @@ pip install -e .
 
 ## Limitations
 
-* Currently only the KITTI .bin dataloader is implemented
-* The reference map has to be in the .pcd format
-* Detailed instructions on how to create refrence maps is missing
-* Currently the visualization is active on default
-* Move to nanobind
+* Detailed instructions on how to create refrence maps are missing
 
 ## Acknowledgement
 
@@ -102,6 +102,7 @@ Great inspiration has come from the following repositories. If you use our work,
 * [KISS-ICP](https://github.com/PRBonn/kiss-icp)
 * [small_gicp](https://github.com/koide3/small_gicp)
 * [Iridescence](https://github.com/koide3/iridescence)
+* [Open3D](https://github.com/isl-org/Open3D)
 
 
 ## Citation

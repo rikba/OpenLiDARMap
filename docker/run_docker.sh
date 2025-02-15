@@ -18,7 +18,7 @@ QY=$8
 QZ=$9
 QW=${10}
 
-tag=0.1.0
+tag=0.2.0
 
 xhost +
 docker run --rm -it \

@@ -1,4 +1,4 @@
-#include "io/kitti_loader.hpp"
+#include "io/format/kitti.hpp"
 
 #include <math.h>
 
@@ -10,10 +10,10 @@
 
 namespace openlidarmap::io {
 
-small_gicp::PointCloud::Ptr loadBIN_kitti(config::Config &config_, std::string bin_path) {
-    std::ifstream file(bin_path, std::ios::binary);
+small_gicp::PointCloud::Ptr KITTILoader::load(const std::string& file_path) {
+    std::ifstream file(file_path, std::ios::binary);
     if (!file) {
-        throw std::runtime_error("Cannot open file: " + bin_path);
+        throw std::runtime_error("Cannot open file: " + file_path);
     }
 
     // Get the file size
@@ -24,7 +24,7 @@ small_gicp::PointCloud::Ptr loadBIN_kitti(config::Config &config_, std::string b
     // Read the file into a buffer
     std::vector<float> buffer(size / sizeof(float));
     if (!file.read(reinterpret_cast<char *>(buffer.data()), size)) {
-        throw std::runtime_error("Error reading file: " + bin_path);
+        throw std::runtime_error("Error reading file: " + file_path);
     }
     constexpr double VERTICAL_ANGLE_OFFSET = (0.205 * M_PI) / 180.0;
     std::vector<Eigen::Vector4d> pointCloud;
@@ -35,8 +35,7 @@ small_gicp::PointCloud::Ptr loadBIN_kitti(config::Config &config_, std::string b
         const Eigen::Vector3d rotationVector = pt.cross(Eigen::Vector3d(0., 0., 1.));
         pt = Eigen::AngleAxisd(VERTICAL_ANGLE_OFFSET, rotationVector.normalized()) * pt;
         const double norm = pt.norm();
-        if (norm > config_.preprocess_.min_range && norm < config_.preprocess_.max_range &&
-            pt[2] > -5.0) {
+        if (norm > config_.preprocess_.min_range && norm < config_.preprocess_.max_range) {
             pointCloud.emplace_back(pt[0], pt[1], pt[2], 1.0);
         }
     }

@@ -13,8 +13,6 @@
 #include "core/prediction.hpp"
 #include "core/preprocess.hpp"
 #include "core/registration.hpp"
-#include "io/kitti_loader.hpp"
-#include "io/map_loader.hpp"
 #include "utils/file_utils.hpp"
 #include "utils/helpers.hpp"
 #include "utils/pose_utils.hpp"
