@@ -36,8 +36,7 @@ small_gicp::PointCloud::Ptr XYZLoader::load(const std::string& file_path) {
             Eigen::Vector3d pt(x, y, z);
             const double norm = pt.norm();
             if (norm > config_.preprocess_.min_range && 
-                norm < config_.preprocess_.max_range && 
-                z > -5.0) {
+                norm < config_.preprocess_.max_range) {
                 pointCloud.emplace_back(x, y, z, 1.0);
             }
         }

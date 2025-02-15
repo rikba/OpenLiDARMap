@@ -32,6 +32,7 @@ add_library(
   io/format/kitti.cpp
   io/format/xyz.cpp
   io/format/pcd.cpp
+  io/format/ply.cpp
   io/loader_factory.cpp
   io/map_loader.cpp
   pipeline/openlidarmap.cpp

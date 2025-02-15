@@ -35,9 +35,11 @@ We provide a Docker image on Docker Hub, which will automatically be pulled with
 <details>
 <summary>Run</summary>
 
-To use our approach, you need a reference map and an initial guess of the first pose.
+To use our approach, you need a reference map and an initial guess of the first pose.  
+More details on reference maps can be found in our paper.
 
-The easiest way to use our approach is with the provided Docker image.
+The easiest way to use our approach is with the provided Docker image.  
+We currently support point cloud files in `.bin`(KITTI), `.pcd`, `.ply` and `.xyz`.
 ```sh
 ./docker/run_docker.sh <map_path> <scan_path> <output_path> <x> <y> <z> <qx> <qy> <qz> <qw>
 
@@ -89,10 +91,8 @@ pip install -e .
 
 ## Limitations
 
-* Currently only the KITTI .bin dataloader is implemented
 * The reference map has to be in the .pcd format
 * Detailed instructions on how to create refrence maps is missing
-* Currently the visualization is active on default
 * Move to nanobind
 
 ## Acknowledgement

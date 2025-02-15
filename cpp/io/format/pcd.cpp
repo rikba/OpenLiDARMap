@@ -176,8 +176,7 @@ small_gicp::PointCloud::Ptr PCDLoader::load(const std::string& file_path) {
             if (std::isfinite(x) && std::isfinite(y) && std::isfinite(z)) {
                 const double norm = Eigen::Vector3d(x, y, z).norm();
                 if (norm > config_.preprocess_.min_range && 
-                    norm < config_.preprocess_.max_range && 
-                    z > -5.0) {
+                    norm < config_.preprocess_.max_range) {
                     points.emplace_back(x, y, z, 1.0);
                 }
             }
@@ -199,8 +198,7 @@ small_gicp::PointCloud::Ptr PCDLoader::load(const std::string& file_path) {
             
             const double norm = Eigen::Vector3d(x, y, z).norm();
             if (norm > config_.preprocess_.min_range && 
-                norm < config_.preprocess_.max_range && 
-                z > -5.0) {
+                norm < config_.preprocess_.max_range) {
                 points.emplace_back(x, y, z, 1.0);
             }
         }

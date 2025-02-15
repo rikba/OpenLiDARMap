@@ -11,6 +11,7 @@ enum class FileType {
     BIN,
     XYZ,
     PCD,
+    PLY,
     UNKNOWN
 };
 

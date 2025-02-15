@@ -2,6 +2,7 @@
 #include "io/format/kitti.hpp"
 #include "io/format/xyz.hpp"
 #include "io/format/pcd.hpp"
+#include "io/format/ply.hpp"
 
 #include <filesystem>
 
@@ -14,6 +15,7 @@ FileType LoaderFactory::getFileType(const std::string& file_path) {
     if (ext == ".bin") return FileType::BIN;
     if (ext == ".xyz") return FileType::XYZ;
     if (ext == ".pcd") return FileType::PCD;
+    if (ext == ".ply") return FileType::PLY;
     return FileType::UNKNOWN;
 }
 
@@ -27,6 +29,8 @@ std::unique_ptr<PointCloudLoader> LoaderFactory::createLoader(config::Config& co
             return std::make_unique<XYZLoader>(config);
         case FileType::PCD:
             return std::make_unique<PCDLoader>(config);
+        case FileType::PLY:
+            return std::make_unique<PLYLoader>(config);
         default:
             throw std::runtime_error("Unsupported file type");
     }

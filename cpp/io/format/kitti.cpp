@@ -35,8 +35,7 @@ small_gicp::PointCloud::Ptr KITTILoader::load(const std::string& file_path) {
         const Eigen::Vector3d rotationVector = pt.cross(Eigen::Vector3d(0., 0., 1.));
         pt = Eigen::AngleAxisd(VERTICAL_ANGLE_OFFSET, rotationVector.normalized()) * pt;
         const double norm = pt.norm();
-        if (norm > config_.preprocess_.min_range && norm < config_.preprocess_.max_range &&
-            pt[2] > -5.0) {
+        if (norm > config_.preprocess_.min_range && norm < config_.preprocess_.max_range) {
             pointCloud.emplace_back(pt[0], pt[1], pt[2], 1.0);
         }
     }
