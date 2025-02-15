@@ -29,7 +29,10 @@ add_library(
   core/pose_graph.cpp
   core/prediction.cpp
   core/preprocess.cpp
-  io/kitti_loader.cpp
+  io/format/kitti.cpp
+  io/format/xyz.cpp
+  io/format/pcd.cpp
+  io/loader_factory.cpp
   io/map_loader.cpp
   pipeline/openlidarmap.cpp
   utils/file_utils.cpp

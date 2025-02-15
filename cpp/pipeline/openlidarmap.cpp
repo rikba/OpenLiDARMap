@@ -1,5 +1,7 @@
 #include "pipeline/openlidarmap.hpp"
 #include "utils/helpers.hpp"
+#include "io/loader_factory.hpp"
+#include "io/map_loader.hpp"
 
 #include <guik/viewer/async_light_viewer.hpp>
 #include <guik/viewer/light_viewer.hpp>
@@ -52,7 +54,7 @@ bool Pipeline::initialize(const std::string &map_path,
 
 bool Pipeline::initializeFirstPoses(const Vector7d &initial_pose) {
     // First frame scan2map
-    auto first_frame = io::loadBIN_kitti(config_, scan_files_[0]);
+    auto first_frame = io::LoaderFactory::loadPointCloud(config_, scan_files_[0]);
     small_gicp::estimate_covariances_tbb(*first_frame, config_.preprocess_.num_neighbors);
     auto first_frame_processed = preprocess_->preprocess_cloud(first_frame);
     small_gicp::estimate_covariances_tbb(*first_frame_processed, config_.preprocess_.num_neighbors);
@@ -74,7 +76,7 @@ bool Pipeline::initializeFirstPoses(const Vector7d &initial_pose) {
     }
 
     // Second frame scan2scan
-    auto second_frame = io::loadBIN_kitti(config_, scan_files_[1]);
+    auto second_frame = io::LoaderFactory::loadPointCloud(config_, scan_files_[1]);
     auto second_frame_processed = preprocess_->preprocess_cloud(second_frame);
     small_gicp::estimate_covariances_tbb(*second_frame_processed, config_.preprocess_.num_neighbors);
 
@@ -169,7 +171,7 @@ void Pipeline::processingLoop() {
             waitIfPaused();
             if (stop_requested_) break;
 
-            auto frame = io::loadBIN_kitti(config_, scan_files_[i]);
+            auto frame = io::LoaderFactory::loadPointCloud(config_, scan_files_[i]);
             if (!processFrame(frame)) {
                 stop_requested_ = true;
                 break;
