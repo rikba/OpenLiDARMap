@@ -10,7 +10,7 @@
 
 namespace openlidarmap::io {
 
-small_gicp::PointCloud::Ptr KITTILoader::load(const std::string& file_path) {
+small_gicp::PointCloud::Ptr KITTILoader::load(const std::string &file_path) {
     std::ifstream file(file_path, std::ios::binary);
     if (!file) {
         throw std::runtime_error("Cannot open file: " + file_path);

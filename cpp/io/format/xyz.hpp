@@ -6,8 +6,8 @@ namespace openlidarmap::io {
 
 class XYZLoader : public PointCloudLoader {
 public:
-    explicit XYZLoader(config::Config& config) : PointCloudLoader(config) {}
-    small_gicp::PointCloud::Ptr load(const std::string& file_path) override;
+    explicit XYZLoader(config::Config &config) : PointCloudLoader(config) {}
+    small_gicp::PointCloud::Ptr load(const std::string &file_path) override;
 };
 
 }  // namespace openlidarmap::io

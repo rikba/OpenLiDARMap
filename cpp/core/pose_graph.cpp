@@ -20,7 +20,6 @@ void PoseGraph::addConstraint(size_t idx_from,
                               size_t idx_to,
                               const Vector7d &measurement,
                               bool absolute = false) {
-
     if (poses_.size() > constraints_.size()) {
         constraints_.emplace_back(std::make_pair(nullptr, nullptr));
     }
@@ -58,11 +57,12 @@ void PoseGraph::manageSlidingWindow() {
         return;
     }
 
-    size_t oldest_allowed = (poses_.size() > config_.ceres_.sliding_window_size) ? 
-        poses_.size() - config_.ceres_.sliding_window_size : 0;
+    size_t oldest_allowed = (poses_.size() > config_.ceres_.sliding_window_size)
+                                ? poses_.size() - config_.ceres_.sliding_window_size
+                                : 0;
 
     if (oldest_allowed > 0 && current_fixed_pose_ != static_cast<int>(oldest_allowed)) {
-        auto& constraint = constraints_[oldest_allowed - 1];
+        auto &constraint = constraints_[oldest_allowed - 1];
         if (constraint.first != nullptr) {
             problem_.RemoveResidualBlock(constraint.first);
             constraint.first = nullptr;

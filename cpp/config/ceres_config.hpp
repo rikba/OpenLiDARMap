@@ -9,7 +9,7 @@ struct CeresConfig {
     int num_iterations{};
     bool print{};
     int num_threads{};
-    size_t sliding_window_size{}; 
+    size_t sliding_window_size{};
     bool use_sliding_window{};
 
     CeresConfig()

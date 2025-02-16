@@ -9,10 +9,7 @@ struct PipelineConfig {
     double rotation_threshold{};
     bool visualize{};
 
-    PipelineConfig()
-        : translation_threshold(0.05),
-          rotation_threshold(0.05),
-          visualize(true) {}
+    PipelineConfig() : translation_threshold(0.05), rotation_threshold(0.05), visualize(true) {}
 };
 
 }  // namespace openlidarmap::config
