@@ -1,19 +1,21 @@
 #include "io/format/pcd.hpp"
+
+#include <liblzf/lzf.h>
+
+#include <cstring>
 #include <fstream>
+#include <iomanip>
 #include <sstream>
 #include <vector>
-#include <cstring>
-#include <iomanip>
-#include <liblzf/lzf.h>
 
 namespace openlidarmap::io {
 
 struct PCDField {
     std::string name;
-    int size = 4;      // default size for float
-    char type = 'F';   // F(float), I(signed), U(unsigned)
-    int count = 1;     // number of elements
-    int offset = 0;    // byte offset in point data
+    int size = 4;     // default size for float
+    char type = 'F';  // F(float), I(signed), U(unsigned)
+    int count = 1;    // number of elements
+    int offset = 0;   // byte offset in point data
 };
 
 struct PCDHeader {
@@ -27,7 +29,7 @@ struct PCDHeader {
     int point_size = 0;
 };
 
-bool ParsePCDHeader(std::ifstream& file, PCDHeader& header) {
+bool ParsePCDHeader(std::ifstream &file, PCDHeader &header) {
     std::string line;
     int offset = 0;
 
@@ -78,7 +80,7 @@ bool ParsePCDHeader(std::ifstream& file, PCDHeader& header) {
     return true;
 }
 
-small_gicp::PointCloud::Ptr PCDLoader::load(const std::string& file_path) {
+small_gicp::PointCloud::Ptr PCDLoader::load(const std::string &file_path) {
     std::ifstream file(file_path, std::ios::binary);
     if (!file) {
         throw std::runtime_error("Cannot open file: " + file_path);
@@ -106,7 +108,7 @@ small_gicp::PointCloud::Ptr PCDLoader::load(const std::string& file_path) {
 
         file.clear();
         file.seekg(0);
-        
+
         std::string line;
         bool found_data = false;
         while (std::getline(file, line)) {
@@ -126,11 +128,11 @@ small_gicp::PointCloud::Ptr PCDLoader::load(const std::string& file_path) {
         // Rest of binary reading remains the same...
         for (int i = 0; i < header.points; i++) {
             if (!file.read(point_data.data(), header.point_size)) {
-                std::cerr << "Warning: Only read " << points_read << " of " 
-                         << header.points << " points" << std::endl;
+                std::cerr << "Warning: Only read " << points_read << " of " << header.points
+                          << " points" << std::endl;
                 break;
             }
-            
+
             float x, y, z;
             std::memcpy(&x, point_data.data() + header.fields[x_idx].offset, sizeof(float));
             std::memcpy(&y, point_data.data() + header.fields[y_idx].offset, sizeof(float));
@@ -138,8 +140,7 @@ small_gicp::PointCloud::Ptr PCDLoader::load(const std::string& file_path) {
 
             if (std::isfinite(x) && std::isfinite(y) && std::isfinite(z)) {
                 const double norm = Eigen::Vector3d(x, y, z).norm();
-                if (norm > config_.preprocess_.min_range && 
-                    norm < config_.preprocess_.max_range) {
+                if (norm > config_.preprocess_.min_range && norm < config_.preprocess_.max_range) {
                     points.emplace_back(x, y, z, 1.0);
                 }
             }
@@ -148,7 +149,7 @@ small_gicp::PointCloud::Ptr PCDLoader::load(const std::string& file_path) {
     } else if (header.is_compressed) {
         file.clear();
         file.seekg(0);
-        
+
         std::string line;
         while (std::getline(file, line)) {
             if (line.find("DATA binary_compressed") != std::string::npos) {
@@ -157,8 +158,8 @@ small_gicp::PointCloud::Ptr PCDLoader::load(const std::string& file_path) {
         }
 
         uint32_t compressed_size = 0, uncompressed_size = 0;
-        if (!file.read(reinterpret_cast<char*>(&compressed_size), sizeof(compressed_size)) ||
-            !file.read(reinterpret_cast<char*>(&uncompressed_size), sizeof(uncompressed_size))) {
+        if (!file.read(reinterpret_cast<char *>(&compressed_size), sizeof(compressed_size)) ||
+            !file.read(reinterpret_cast<char *>(&uncompressed_size), sizeof(uncompressed_size))) {
             throw std::runtime_error("Failed to read size info");
         }
 
@@ -172,10 +173,8 @@ small_gicp::PointCloud::Ptr PCDLoader::load(const std::string& file_path) {
         }
 
         // Decompress using LZF
-        int result = lzf_decompress(
-            compressed_data.data(), compressed_size,
-            uncompressed_data.data(), uncompressed_size
-        );
+        int result = lzf_decompress(compressed_data.data(), compressed_size,
+                                    uncompressed_data.data(), uncompressed_size);
 
         if (result != uncompressed_size) {
             throw std::runtime_error("LZF decompression failed");
@@ -186,9 +185,9 @@ small_gicp::PointCloud::Ptr PCDLoader::load(const std::string& file_path) {
         points.resize(header.points);
 
         // Process each coordinate field
-        for (const auto& field : header.fields) {
-            const char* base_ptr = uncompressed_data.data() + field.offset * strip_size;
-            
+        for (const auto &field : header.fields) {
+            const char *base_ptr = uncompressed_data.data() + field.offset * strip_size;
+
             if (field.name == "x") {
                 for (int i = 0; i < header.points; i++) {
                     float value;
@@ -212,18 +211,17 @@ small_gicp::PointCloud::Ptr PCDLoader::load(const std::string& file_path) {
         }
 
         // Apply range filtering
-        auto it = std::remove_if(points.begin(), points.end(),
-            [this](const Eigen::Vector4d& p) {
-                const double norm = p.head<3>().norm();
-                return norm < config_.preprocess_.min_range || norm > config_.preprocess_.max_range;
-            });
+        auto it = std::remove_if(points.begin(), points.end(), [this](const Eigen::Vector4d &p) {
+            const double norm = p.head<3>().norm();
+            return norm < config_.preprocess_.min_range || norm > config_.preprocess_.max_range;
+        });
         points.erase(it, points.end());
     } else {
         std::string line;
         while (std::getline(file, line) && points.size() < header.points) {
             std::istringstream iss(line);
             std::vector<double> values(header.fields.size());
-            
+
             for (size_t i = 0; i < header.fields.size(); i++) {
                 iss >> values[i];
             }
@@ -231,10 +229,9 @@ small_gicp::PointCloud::Ptr PCDLoader::load(const std::string& file_path) {
             const double x = values[x_idx];
             const double y = values[y_idx];
             const double z = values[z_idx];
-            
+
             const double norm = Eigen::Vector3d(x, y, z).norm();
-            if (norm > config_.preprocess_.min_range && 
-                norm < config_.preprocess_.max_range) {
+            if (norm > config_.preprocess_.min_range && norm < config_.preprocess_.max_range) {
                 points.emplace_back(x, y, z, 1.0);
             }
         }
@@ -243,4 +240,4 @@ small_gicp::PointCloud::Ptr PCDLoader::load(const std::string& file_path) {
     return std::make_shared<small_gicp::PointCloud>(points);
 }
 
-} // namespace openlidarmap::io
+}  // namespace openlidarmap::io

@@ -1,7 +1,8 @@
 #pragma once
-#include "io/point_cloud_loader.hpp"
-#include <vector>
 #include <string>
+#include <vector>
+
+#include "io/point_cloud_loader.hpp"
 
 namespace openlidarmap::io {
 
@@ -15,11 +16,11 @@ struct PLYHeader {
 
 class PLYLoader : public PointCloudLoader {
 public:
-    explicit PLYLoader(config::Config& config) : PointCloudLoader(config) {}
-    small_gicp::PointCloud::Ptr load(const std::string& file_path) override;
+    explicit PLYLoader(config::Config &config) : PointCloudLoader(config) {}
+    small_gicp::PointCloud::Ptr load(const std::string &file_path) override;
 
 private:
-    bool ParsePLYHeader(std::ifstream& file, PLYHeader& header);
+    bool ParsePLYHeader(std::ifstream &file, PLYHeader &header);
 };
 
 }  // namespace openlidarmap::io

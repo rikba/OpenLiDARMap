@@ -20,24 +20,26 @@ void PoseGraph::addConstraint(size_t idx_from,
                               size_t idx_to,
                               const Vector7d &measurement,
                               bool absolute = false) {
+    if (poses_.size() > constraints_.size()) {
+        constraints_.emplace_back(std::make_pair(nullptr, nullptr));
+    }
+
     if (absolute) {
         ceres::ResidualBlockId abs_block_id = problem_.AddResidualBlock(
             new ceres::AutoDiffCostFunction<AbsPoseError, 6, 7>(new AbsPoseError(measurement)),
             new ceres::TukeyLoss(1.0), poses_[idx_to].data());
-        abs_residual_blocks_.emplace_back(abs_block_id);
+        constraints_[idx_to].first = abs_block_id;
         problem_.SetManifold(poses_[idx_to].data(), pose_manifold_);
     } else {
         ceres::ResidualBlockId rel_block_id = problem_.AddResidualBlock(
             new ceres::AutoDiffCostFunction<RelPoseError, 6, 7, 7>(new RelPoseError(measurement)),
             new ceres::CauchyLoss(1.0), poses_[idx_from].data(), poses_[idx_to].data());
-        rel_residual_blocks_.emplace_back(rel_block_id);
         problem_.SetManifold(poses_[idx_from].data(), pose_manifold_);
         problem_.SetManifold(poses_[idx_to].data(), pose_manifold_);
+        constraints_[idx_to].second = rel_block_id;
     }
 
-    if (poses_.size() == 1) {
-        problem_.SetParameterBlockConstant(poses_[0].data());
-    }
+    manageSlidingWindow();
 }
 
 bool PoseGraph::optimize() {
@@ -46,25 +48,31 @@ bool PoseGraph::optimize() {
 }
 
 void PoseGraph::manageSlidingWindow() {
-    window_indices_.emplace_back(poses_.size() - 1);
-
-    while (window_indices_.size() >= config_.pipeline_.sliding_window_size) {
-        window_indices_.pop_front();
-
-        // Remove oldest residual blocks
-        if (!abs_residual_blocks_.empty()) {
-            problem_.RemoveResidualBlock(abs_residual_blocks_.front());
-            abs_residual_blocks_.pop_front();
-        }
-        if (!rel_residual_blocks_.empty()) {
-            problem_.RemoveResidualBlock(rel_residual_blocks_.front());
-            rel_residual_blocks_.pop_front();
-        }
+    if (current_fixed_pose_ == -1) {
+        problem_.SetParameterBlockConstant(poses_[0].data());
+        current_fixed_pose_ = 0;
     }
 
-    // Always keep first pose fixed
-    if (!window_indices_.empty()) {
-        problem_.SetParameterBlockConstant(poses_[window_indices_.front()].data());
+    if (!config_.ceres_.use_sliding_window) {
+        return;
+    }
+
+    size_t oldest_allowed = (poses_.size() > config_.ceres_.sliding_window_size)
+                                ? poses_.size() - config_.ceres_.sliding_window_size
+                                : 0;
+
+    if (oldest_allowed > 0 && current_fixed_pose_ != static_cast<int>(oldest_allowed)) {
+        auto &constraint = constraints_[oldest_allowed - 1];
+        if (constraint.first != nullptr) {
+            problem_.RemoveResidualBlock(constraint.first);
+            constraint.first = nullptr;
+        }
+        if (constraint.second != nullptr) {
+            problem_.RemoveResidualBlock(constraint.second);
+            constraint.second = nullptr;
+        }
+        problem_.SetParameterBlockConstant(poses_[oldest_allowed].data());
+        current_fixed_pose_ = oldest_allowed;
     }
 }
 

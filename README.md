@@ -5,14 +5,15 @@
 
   ![C++](https://img.shields.io/badge/-C++-blue?logo=cplusplus)
   ![Python](https://img.shields.io/badge/Python-3670A0?logo=python&logoColor=ffdd54)
-  [![Docker](https://badgen.net/badge/icon/docker?icon=docker&label)](https://www.docker.com/)
+  [![Docker](https://badgen.net/badge/icon/Docker?icon=docker&label)](https://www.docker.com/)
   ![License](https://img.shields.io/badge/license-Apache%202.0-blue)
-  ![Version](https://img.shields.io/badge/version-0.2.0-blue)
+  ![Version](https://img.shields.io/badge/version-0.2.1-blue)
   [![arXiv](https://img.shields.io/badge/arXiv-1234.56789-b31b1b.svg)](https://arxiv.org/abs/2501.11111)
+  [![YouTube](https://img.shields.io/badge/YouTube-FF0000?logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=3QsLBMW8xB0&list=PL0qnWNTSPM4pfnHflUxCHcshOIlXDSNWp)
   
   <br align="center">
   
-  [![openlidarmap](doc/openlidarmap_seq00.gif)](https://youtu.be/JqTDPS63eIE)
+  [![openlidarmap](doc/openlidarmap_seq00.gif)](https://www.youtube.com/watch?v=3QsLBMW8xB0&list=PL0qnWNTSPM4pfnHflUxCHcshOIlXDSNWp)
   <br>
 
 </div>

@@ -23,11 +23,11 @@ private:
     ceres::Solver::Options solver_options_{};
     const config::Config &config_;
     std::deque<Vector7d> &poses_;
-    std::deque<ceres::ResidualBlockId> abs_residual_blocks_{};
-    std::deque<ceres::ResidualBlockId> rel_residual_blocks_{};
     std::deque<size_t> window_indices_{};
     ceres::Manifold *pose_manifold_{};
     ceres::Solver::Summary summary_{};
+    std::deque<std::pair<ceres::ResidualBlockId, ceres::ResidualBlockId>> constraints_{};
+    int current_fixed_pose_{-1};
 };
 
 }  // namespace openlidarmap
