@@ -37,10 +37,10 @@ public:
     void writeResults() const;
     const std::deque<Vector7d> &getPoses() const { return poses_; }
     void addPose(const Vector7d &pose);
+    bool processFrame(small_gicp::PointCloud::Ptr &frame);
 
 private:
     bool initializeFirstPoses(const Vector7d &initial_pose);
-    bool processFrame(small_gicp::PointCloud::Ptr &frame);
     void updatePoseGraph(const small_gicp::RegistrationResult &scan2map_result,
                          const small_gicp::RegistrationResult &scan2scan_result);
     Vector7d predictNextPose();
