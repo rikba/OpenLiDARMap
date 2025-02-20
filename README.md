@@ -47,7 +47,7 @@ We currently support point cloud files in `.bin`(KITTI), `.pcd`, `.ply` and `.xy
 ./docker/run_docker.sh <map_path> <scan_path> <output_path> <x> <y> <z> <qx> <qy> <qz> <qw>
 
 # Example
-./docker/run_docker.sh datasets/kitti/map.pcd datasets/data_odometry_velodyne/dataset/sequences/00/velodyne output.txt 395.5 1696.25 117.55 0 0 0.4848096 0.8746197
+./docker/run_docker.sh /datasets/kitti/map.pcd /datasets/data_odometry_velodyne/dataset/sequences/00/velodyne /output/directory 395.5 1696.25 117.55 0 0 0.4848096 0.8746197
 ```
 
 The output of the algorithm are poses in the KITTI format.
@@ -63,6 +63,7 @@ The configuration of this pipeline can be changed in the `cpp/config` files. The
 | Parameter | Description | Default | Note |
 | :-------- | :-------- | :--------: | :-------- |
 | pipeline_.visualize | Toggle GUI | `true` | use `false` on headless servers |
+| pipeline_.save_submaps | Toggle submap saving | `false` | use to directly save high-resolution PCD submaps |
 | preprocess_.downsampling_resolution | Scans are voxelized before usage | `1.5` | Reduce the size for increased robustness |
 | preprocess_.num_neighbors | Points for covariance calculation | `10` | Try both directions |
 | registration_.voxel_resolution | Voxelhashmap voxel size | `1.0` | Reduce the size for increased robustness | 

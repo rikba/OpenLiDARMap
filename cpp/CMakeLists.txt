@@ -36,6 +36,7 @@ add_library(
   io/format/pcd.cpp
   io/format/ply.cpp
   io/loader_factory.cpp
+  io/point_cloud_saver.cpp
   pipeline/openlidarmap.cpp
   utils/file_utils.cpp
   utils/pose_utils.cpp
