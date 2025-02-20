@@ -49,6 +49,8 @@ private:
     void handleVisualizationControls(guik::LightViewer *viewer);
     void waitIfPaused();
     void processingLoop();
+    void saveSubmap();
+    double calculateTravelledDistance(const Vector7d &pose1, const Vector7d &pose2);
 
     config::Config config_{};
     config::Config scan2scan_config_{};
@@ -76,6 +78,10 @@ private:
     std::thread processing_thread_;
     double current_processing_time_{0.0};
     float progress_{0.0f};
+
+    double last_save_distance_{0.0};
+    int submap_counter_{0};
+    small_gicp::IncrementalVoxelMap<small_gicp::FlatContainerPoints>::Ptr current_submap_;
 };
 
 }  // namespace openlidarmap::pipeline
