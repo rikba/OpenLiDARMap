@@ -5,14 +5,17 @@
 #include <memory>
 
 #include "io/loader_factory.hpp"
-#include "utils/helpers.hpp"
 #include "io/point_cloud_saver.hpp"
+#include "utils/helpers.hpp"
 
 namespace openlidarmap::pipeline {
 
 Pipeline::Pipeline(const config::Config &config)
-    : config_(config), scan2scan_config_(config), scan2map_config_(config),
-      last_save_distance_(0.0), submap_counter_(0) {
+    : config_(config),
+      scan2scan_config_(config),
+      scan2map_config_(config),
+      last_save_distance_(0.0),
+      submap_counter_(0) {
     preprocess_ = std::make_unique<Preprocess>(config_);
     scan2map_config_.registration_.removal_horizon = 1e9;
     scan2map_config_.registration_.max_num_points_in_cell = 100;
@@ -258,19 +261,20 @@ bool Pipeline::processFrame(small_gicp::PointCloud::Ptr &frame) {
     if (config_.pipeline_.save_submaps) {
         if (!current_submap_) {
             constexpr auto resolution = 0.25;
-            current_submap_ = std::make_shared<small_gicp::IncrementalVoxelMap<small_gicp::FlatContainerPoints>>(
-                resolution);
+            current_submap_ =
+                std::make_shared<small_gicp::IncrementalVoxelMap<small_gicp::FlatContainerPoints>>(
+                    resolution);
             current_submap_->voxel_setting.max_num_points_in_cell = 100;
             current_submap_->removal_horizon = 1e9;
         }
-        
-        current_submap_->distance_insert(*frame, 
-            utils::PoseUtils::poseVectorToIsometry(poses_[pose_index_]));
-            
-        double total_distance = calculateTravelledDistance(
-            poses_[pose_index_], poses_[pose_index_ - 1]);
+
+        current_submap_->distance_insert(
+            *frame, utils::PoseUtils::poseVectorToIsometry(poses_[pose_index_]));
+
+        double total_distance =
+            calculateTravelledDistance(poses_[pose_index_], poses_[pose_index_ - 1]);
         last_save_distance_ += total_distance;
-        
+
         if (last_save_distance_ >= config_.pipeline_.map_save_interval) {
             saveSubmap();
             last_save_distance_ = 0.0;
@@ -401,26 +405,26 @@ void Pipeline::waitIfPaused() {
 
 void Pipeline::saveSubmap() {
     if (!current_submap_) return;
-    
+
     auto voxel_points = small_gicp::traits::voxel_points(*current_submap_);
     auto cloud = small_gicp::PointCloud(voxel_points);
-    
-    std::string filename = output_path_ + 
-                          "/submap_" + std::to_string(submap_counter_++) + ".pcd";
-                          
+
+    std::string filename = output_path_ + "/submap_" + std::to_string(submap_counter_++) + ".pcd";
+
     if (!io::PointCloudSaver::savePCD(filename, cloud)) {
         std::cerr << "Failed to save submap to " << filename << std::endl;
     }
-    
+
     // Reset submap
     constexpr auto resolution = 0.25;
-    current_submap_ = std::make_shared<small_gicp::IncrementalVoxelMap<small_gicp::FlatContainerPoints>>(
+    current_submap_ =
+        std::make_shared<small_gicp::IncrementalVoxelMap<small_gicp::FlatContainerPoints>>(
             resolution);
     current_submap_->voxel_setting.max_num_points_in_cell = 100;
     current_submap_->removal_horizon = 1e9;
 }
 
-double Pipeline::calculateTravelledDistance(const Vector7d& pose1, const Vector7d& pose2) {
+double Pipeline::calculateTravelledDistance(const Vector7d &pose1, const Vector7d &pose2) {
     return (pose1.head<3>() - pose2.head<3>()).norm();
 }
 

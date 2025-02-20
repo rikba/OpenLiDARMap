@@ -6,9 +6,10 @@ namespace openlidarmap::io {
 
 class PointCloudSaver {
 public:
-    static bool savePCD(const std::string& filename, const small_gicp::PointCloud& cloud);
+    static bool savePCD(const std::string &filename, const small_gicp::PointCloud &cloud);
+
 private:
-    static void writeHeader(std::ofstream& file, size_t num_points);
+    static void writeHeader(std::ofstream &file, size_t num_points);
 };
 
 }  // namespace openlidarmap::io

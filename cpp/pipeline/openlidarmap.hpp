@@ -50,7 +50,7 @@ private:
     void waitIfPaused();
     void processingLoop();
     void saveSubmap();
-    double calculateTravelledDistance(const Vector7d& pose1, const Vector7d& pose2);
+    double calculateTravelledDistance(const Vector7d &pose1, const Vector7d &pose2);
 
     config::Config config_{};
     config::Config scan2scan_config_{};
