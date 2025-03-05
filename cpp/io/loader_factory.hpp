@@ -6,7 +6,7 @@
 
 namespace openlidarmap::io {
 
-enum class FileType { BIN, XYZ, PCD, PLY, UNKNOWN };
+enum class FileType { BIN, XYZ, PCD, PLY, NUSCENES, UNKNOWN };
 
 class LoaderFactory {
 public:
