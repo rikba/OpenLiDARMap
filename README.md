@@ -9,6 +9,7 @@
   ![License](https://img.shields.io/badge/license-Apache%202.0-blue)
   ![Version](https://img.shields.io/badge/version-0.2.1-blue)
   [![arXiv](https://img.shields.io/badge/arXiv-1234.56789-b31b1b.svg)](https://arxiv.org/abs/2501.11111)
+  [![DOI:10.5220/0013405400003941](https://img.shields.io/badge/DOI-10.5220/0013405400003941-00629B.svg)](https://doi.org/10.5220/0013405400003941)
   [![YouTube](https://img.shields.io/badge/YouTube-FF0000?logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=3QsLBMW8xB0&list=PL0qnWNTSPM4pfnHflUxCHcshOIlXDSNWp)
   
   <br align="center">
@@ -92,6 +93,9 @@ pip install -e .
 
 </details>
 
+## Data
+
+The reference maps and original map outputs (v0.0.1) used for the paper can be downloaded from the following link: https://doi.org/10.14459/2025mp1771733
 
 ## Limitations
 
@@ -110,13 +114,16 @@ Great inspiration has come from the following repositories. If you use our work,
 ## Citation
 
 ```bibtex
-@article{kulmer2025openlidarmap,
-  author    = {Kulmer, Dominik and Leitenstern, Maximilian and Weinmann, Marcel and Lienkamp, Markus},
-  title     = {{OpenLiDARMap: Zero-Drift Point Cloud Mapping using Map Priors}},
-  pages     = {1-11},
-  doi       = {10.48550/arXiv.2501.11111},
-  year      = {2025},
-  url       = {https://arxiv.org/abs/2501.11111},
-  codeurl   = {https://github.com/TUMFTM/OpenLiDARMap},
+@conference{kulmer2025openlidarmap,
+  author={Kulmer, Dominik and Leitenstern, Maximilian and Weinmann, Marcel and Lienkamp, Markus},
+  title={OpenLiDARMap: Zero-Drift Point Cloud Mapping Using Map Priors},
+  booktitle={Proceedings of the 11th International Conference on Vehicle Technology and Intelligent Transport Systems - VEHITS},
+  year={2025},
+  pages={178-188},
+  publisher={SciTePress},
+  organization={INSTICC},
+  doi={10.5220/0013405400003941},
+  isbn={978-989-758-745-0},
+  issn={2184-495X},
 }
 ```
