@@ -12,9 +12,9 @@ struct PipelineConfig {
     double map_save_interval{};
 
     PipelineConfig()
-        : translation_threshold(0.05),
+        : translation_threshold(0.2),
           rotation_threshold(0.05),
-          visualize(false),
+          visualize(true),
           save_submaps(false),
           map_save_interval(50.0) {}
 };
