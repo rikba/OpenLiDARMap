@@ -215,9 +215,15 @@ bool Pipeline::processFrame(small_gicp::PointCloud::Ptr &frame) {
     // Scan-to-scan registration
     auto scan2scan_result = scan2scan_registration_->register_frame(processed_frame, initial_guess);
 
-    if (!utils::PoseUtils::isMoving(scan2scan_result.T_target_source, poses_[pose_index_ - 1],
-                                    config_.pipeline_.translation_threshold,
-                                    config_.pipeline_.rotation_threshold)) {
+    bool is_moving = true;
+    if (small_gicp::traits::has_normals(*frame)) {
+        is_moving = frame->normals[0].norm() > config_.pipeline_.translation_threshold;
+    } else {
+        is_moving = utils::PoseUtils::isMoving(scan2scan_result.T_target_source, poses_[pose_index_ - 1],
+                                              config_.pipeline_.translation_threshold,
+                                              config_.pipeline_.rotation_threshold);
+    } 
+    if (!is_moving) {
         kitti_poses_.emplace_back(
             utils::PoseUtils::isometryToPoseVector(scan2scan_result.T_target_source));
         return true;
