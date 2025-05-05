@@ -14,7 +14,7 @@ struct PipelineConfig {
     PipelineConfig()
         : translation_threshold(0.05),
           rotation_threshold(0.05),
-          visualize(true),
+          visualize(false),
           save_submaps(false),
           map_save_interval(50.0) {}
 };
