@@ -24,17 +24,19 @@
 	// Define workspace
 	"workspaceFolder": "/dev_ws",
 	"runArgs": [
-		"-e", "DISPLAY=${env:DISPLAY}",
+		"-e", "DISPLAY=novnc:0.0",
         "-v", "/tmp/.X11-unix:/tmp/.X11-unix",
         "-v", "/etc/localtime:/etc/localtime:ro",
         "-v", "/dev/input:/dev/input",
-		"-v", "/home/${env:USER}/Documents/datasets:/datasets",
-		"-v", "/media/${env:USER}/Volume:/media/Volume",
+		//"-v", "/home/${env:USER}/Documents/datasets:/datasets",
+		//"-v", "/media/${env:USER}/Volume:/media/Volume",
 		"--network=host",
 		"--cap-add=SYS_PTRACE",
 		"--security-opt=seccomp:unconfined",
 		"--security-opt=apparmor:unconfined",
-		"--privileged"
+		"--privileged",
+		"--cpus=8",
+    	"--memory=6g"
 		],
 	"containerEnv": {
 		"LIBGL_ALWAYS_SOFTWARE": "1"
