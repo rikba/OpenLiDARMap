@@ -4,3 +4,6 @@ python/build/*
 scripts/cpp/results/*
 scripts/cpp/data/*
 *.ini
+
+data/
+.DS_Store
