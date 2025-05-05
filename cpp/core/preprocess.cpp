@@ -7,8 +7,11 @@ namespace openlidarmap {
 
 small_gicp::PointCloud::Ptr Preprocess::preprocess_cloud(
     const small_gicp::PointCloud::Ptr &cloud) const {
-    auto preprocessed_cloud =
-        small_gicp::voxelgrid_sampling_tbb(*cloud, config_.preprocess_.downsampling_resolution);
+    auto preprocessed_cloud = std::make_shared<small_gicp::PointCloud>(*cloud);
+    if (config_.preprocess_.downsampling_resolution > 0.0) {
+        // Downsample the point cloud
+        preprocessed_cloud = small_gicp::voxelgrid_sampling_tbb(*cloud, config_.preprocess_.downsampling_resolution);
+    }
 
     small_gicp::estimate_covariances_tbb(*preprocessed_cloud, config_.preprocess_.num_neighbors);
 

@@ -9,7 +9,7 @@ struct PreProcessConfig {
     int num_neighbors{};
 
     PreProcessConfig()
-        : min_range(1.0), max_range(100.0), downsampling_resolution(1.5), num_neighbors(10) {}
+        : min_range(1.0), max_range(100.0), downsampling_resolution(0.0), num_neighbors(10) {}
 };
 
 }  // namespace openlidarmap::config
