@@ -91,15 +91,21 @@ small_gicp::PointCloud::Ptr PCDLoader::load(const std::string &file_path) {
         throw std::runtime_error("Invalid PCD header in file: " + file_path);
     }
 
-    int x_idx = -1, y_idx = -1, z_idx = -1;
+    int x_idx = -1, y_idx = -1, z_idx = -1, nx_idx = -1, ny_idx = -1, nz_idx = -1;
     for (size_t i = 0; i < header.fields.size(); i++) {
         if (header.fields[i].name == "x") x_idx = i;
         if (header.fields[i].name == "y") y_idx = i;
         if (header.fields[i].name == "z") z_idx = i;
+        if (header.fields[i].name == "normal_x") nx_idx = i;
+        if (header.fields[i].name == "normal_y") ny_idx = i;
+        if (header.fields[i].name == "normal_z") nz_idx = i;
     }
 
     std::vector<Eigen::Vector4d> points;
     points.reserve(header.points);
+
+    std::vector<Eigen::Vector4d> normals;
+    normals.reserve(header.points);
 
     if (header.is_binary) {
         if (x_idx == -1 || y_idx == -1 || z_idx == -1) {
@@ -138,12 +144,21 @@ small_gicp::PointCloud::Ptr PCDLoader::load(const std::string &file_path) {
             std::memcpy(&y, point_data.data() + header.fields[y_idx].offset, sizeof(float));
             std::memcpy(&z, point_data.data() + header.fields[z_idx].offset, sizeof(float));
 
+            float nx, ny, nz;
+            if (nx_idx != -1 && ny_idx != -1 && nz_idx != -1) {
+                std::memcpy(&nx, point_data.data() + header.fields[nx_idx].offset, sizeof(float));
+                std::memcpy(&ny, point_data.data() + header.fields[ny_idx].offset, sizeof(float));
+                std::memcpy(&nz, point_data.data() + header.fields[nz_idx].offset, sizeof(float));
+                normals.emplace_back(nx, ny, nz, 0.0);
+            }
+
             if (std::isfinite(x) && std::isfinite(y) && std::isfinite(z)) {
                 const double norm = Eigen::Vector3d(x, y, z).norm();
                 if (norm > config_.preprocess_.min_range && norm < config_.preprocess_.max_range) {
                     points.emplace_back(x, y, z, 1.0);
                 }
             }
+
             points_read++;
         }
     } else if (header.is_compressed) {
@@ -237,7 +252,10 @@ small_gicp::PointCloud::Ptr PCDLoader::load(const std::string &file_path) {
         }
     }
 
-    return std::make_shared<small_gicp::PointCloud>(points);
+    auto pcl = std::make_shared<small_gicp::PointCloud>(points);
+    pcl->normals = normals;
+
+    return pcl;
 }
 
 }  // namespace openlidarmap::io
