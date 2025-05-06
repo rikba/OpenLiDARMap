@@ -288,7 +288,14 @@ bool Pipeline::processFrame(small_gicp::PointCloud::Ptr &frame) {
     }
 
     // Predict next pose
-    addPose(predictNextPose());
+    if (small_gicp::traits::has_normals(*frame)) {
+        // Minus because of doppler
+        Vector3d velocity = -1.0 * frame->normals[0].head<3>();
+        std::cout << "\r Velocity: " << velocity.transpose() << std::flush;
+        addPose(predictNextPoseWithVelocity(velocity));
+    } else {
+        addPose(predictNextPose());
+    }
 
     kitti_poses_.emplace_back(poses_[pose_index_]);
     pose_index_++;
@@ -317,6 +324,10 @@ void Pipeline::addPose(const Vector7d &pose) { poses_.emplace_back(pose); }
 
 Vector7d Pipeline::predictNextPose() {
     return ConstantDistancePredictor::predict(poses_[pose_index_], poses_[pose_index_ - 1]);
+}
+
+Vector7d Pipeline::predictNextPoseWithVelocity(const Vector3d &velocity) {
+    return ConstantDistancePredictor::predictWithVelocity(poses_[pose_index_], velocity);
 }
 
 void Pipeline::updateVisualization(const small_gicp::PointCloud::Ptr &cloud) {

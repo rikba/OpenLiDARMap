@@ -21,10 +21,34 @@ Vector7d ConstantDistancePredictor::predict(const Vector7d &current_pose,
     return predicted_pose;
 }
 
+Vector7d ConstantDistancePredictor::predictWithVelocity(const Vector7d &current_pose,
+                                                          const Eigen::Vector3d &velocity) {
+    Vector7d predicted_pose{};
+
+    // Predict translation with velocity
+    predicted_pose.head<3>() = predictTranslationWithVelocity(current_pose, velocity);
+
+    // Predict rotation
+    Eigen::Quaterniond q_next = poseToQuaternion(current_pose);
+
+    // Pack quaternion into pose vector
+    predicted_pose[3] = q_next.x();
+    predicted_pose[4] = q_next.y();
+    predicted_pose[5] = q_next.z();
+    predicted_pose[6] = q_next.w();
+
+    return predicted_pose;
+}
+
 Eigen::Vector3d ConstantDistancePredictor::predictTranslation(const Vector7d &current,
                                                               const Vector7d &previous) {
     const Eigen::Vector3d velocity = current.head<3>() - previous.head<3>();
     return current.head<3>() + velocity;
+}
+
+Eigen::Vector3d ConstantDistancePredictor::predictTranslationWithVelocity(const Vector7d &current,
+                                                                          const Eigen::Vector3d &velocity) {
+    return current.head<3>() + velocity * 0.05; // Assuming a time step of 0.05 seconds
 }
 
 Eigen::Quaterniond ConstantDistancePredictor::predictRotation(const Vector7d &current,

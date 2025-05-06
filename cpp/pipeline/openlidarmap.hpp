@@ -44,6 +44,7 @@ private:
     void updatePoseGraph(const small_gicp::RegistrationResult &scan2map_result,
                          const small_gicp::RegistrationResult &scan2scan_result);
     Vector7d predictNextPose();
+    Vector7d predictNextPoseWithVelocity(const Vector3d &velocity);
 
     void updateVisualization(const small_gicp::PointCloud::Ptr &cloud);
     void handleVisualizationControls(guik::LightViewer *viewer);
