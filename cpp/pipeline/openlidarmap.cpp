@@ -60,14 +60,32 @@ bool Pipeline::initialize(const std::string &map_path,
 }
 
 bool Pipeline::initializeFirstPoses(const Vector7d &initial_pose) {
-    // First frame scan2map
+    // First frame scan2map with grid search
     auto first_frame = io::LoaderFactory::loadPointCloud(config_, scan_files_[0]);
     small_gicp::estimate_covariances_tbb(*first_frame, config_.preprocess_.num_neighbors);
     auto first_frame_processed = preprocess_->preprocess_cloud(first_frame);
     small_gicp::estimate_covariances_tbb(*first_frame_processed, config_.preprocess_.num_neighbors);
 
-    auto init_result = scan2map_registration_->register_frame(
-        first_frame_processed, utils::PoseUtils::poseVectorToIsometry(initial_pose));
+    size_t best_num_inliers = 0;
+    double best_pose_delta = std::numeric_limits<double>::max();
+    auto init_result = scan2map_registration_->register_frame(first_frame_processed, utils::PoseUtils::poseVectorToIsometry(initial_pose));
+
+    for (double yaw = -30.0; yaw < 30.0; yaw += 1.0) {
+        Eigen::Isometry3d initial_guess = utils::PoseUtils::poseVectorToIsometry(initial_pose);
+        initial_guess.rotate(Eigen::AngleAxisd(yaw * M_PI / 180.0, Eigen::Vector3d::UnitZ()));
+
+        auto result = scan2map_registration_->register_frame(first_frame_processed, initial_guess);
+
+        Eigen::Isometry3d delta = initial_guess.inverse() * result.T_target_source;
+        double pose_delta = delta.translation().norm() + 10.0 * std::abs(Eigen::AngleAxisd(delta.rotation().matrix()).angle());
+        if ((result.num_inliers > best_num_inliers) ||
+            (result.num_inliers == best_num_inliers && pose_delta < best_pose_delta)) {
+            
+            best_num_inliers = result.num_inliers;
+            best_pose_delta = pose_delta;
+            init_result = result;
+        }
+    }
 
     // Initialize with scan2map result
     auto first_aligned_pose = utils::PoseUtils::isometryToPoseVector(init_result.T_target_source);
@@ -287,7 +305,6 @@ bool Pipeline::processFrame(small_gicp::PointCloud::Ptr &frame) {
         }
     }
 
-    // Predict next pose
     addPose(predictNextPose());
 
     kitti_poses_.emplace_back(poses_[pose_index_]);
@@ -307,6 +324,7 @@ void Pipeline::updatePoseGraph(const small_gicp::RegistrationResult &scan2map_re
         utils::PoseUtils::isometryToPoseVector(scan2scan_result.T_target_source), false);
 
     if (scan2map_result.num_inliers > config_.registration_.map_overlap) {
+        std::cout << "\rAdding scan2map constraint at idx " << pose_index_ << std::flush;
         pose_graph_->addConstraint(
             pose_index_, pose_index_,
             utils::PoseUtils::isometryToPoseVector(scan2map_result.T_target_source), true);
