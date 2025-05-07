@@ -66,7 +66,6 @@ bool Pipeline::initializeFirstPoses(const Vector7d &initial_pose) {
     auto first_frame_processed = preprocess_->preprocess_cloud(first_frame);
     small_gicp::estimate_covariances_tbb(*first_frame_processed, config_.preprocess_.num_neighbors);
 
-    // Grid search for initial pose
     size_t best_num_inliers = 0;
     double best_pose_delta = std::numeric_limits<double>::max();
     auto init_result = scan2map_registration_->register_frame(first_frame_processed, utils::PoseUtils::poseVectorToIsometry(initial_pose));
