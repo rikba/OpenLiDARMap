@@ -23,7 +23,7 @@ struct RegistrationConfig {
           max_correspondence_distance(6.0),
           max_dist_sq(max_correspondence_distance * max_correspondence_distance),
           rotation_eps(0.1 * M_PI / 180.0),
-          translation_eps(6e-3),
+          translation_eps(1e-3),
           lambda(1.0),
           max_iterations(1000),
           verbose(false),
