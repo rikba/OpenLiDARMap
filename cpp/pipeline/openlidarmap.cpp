@@ -60,14 +60,40 @@ bool Pipeline::initialize(const std::string &map_path,
 }
 
 bool Pipeline::initializeFirstPoses(const Vector7d &initial_pose) {
-    // First frame scan2map
+    // First frame scan2map with grid search
     auto first_frame = io::LoaderFactory::loadPointCloud(config_, scan_files_[0]);
     small_gicp::estimate_covariances_tbb(*first_frame, config_.preprocess_.num_neighbors);
     auto first_frame_processed = preprocess_->preprocess_cloud(first_frame);
     small_gicp::estimate_covariances_tbb(*first_frame_processed, config_.preprocess_.num_neighbors);
 
-    auto init_result = scan2map_registration_->register_frame(
-        first_frame_processed, utils::PoseUtils::poseVectorToIsometry(initial_pose));
+    double best_score = std::numeric_limits<double>::max();
+    small_gicp::RegistrationResult best_result;
+
+    for (double dx = -2.0; dx <= 2.0; dx += 1.0) {
+        for (double dy = -2.0; dy <= 2.0; dy += 1.0) {
+            for (double dz = -2.0; dz <= 2.0; dz += 1.0) {
+                for (double yaw = -30.0; yaw < 30.0; yaw += 3.0) {
+                    Eigen::Isometry3d initial_guess = utils::PoseUtils::poseVectorToIsometry(initial_pose);
+                    initial_guess.translate(Eigen::Vector3d(dx, dy, dz));
+                    initial_guess.rotate(Eigen::AngleAxisd(yaw * M_PI / 180.0, Eigen::Vector3d::UnitZ()));
+
+                    auto result = scan2map_registration_->register_frame(first_frame_processed, initial_guess);
+
+                    double score = 0.5 * (1.0 - result.num_inliers / first_frame_processed->size()) + 0.5 * result.error;
+                    if (score < best_score) {
+                        best_score = score;
+                        best_result = result;
+                    }
+                }
+            }
+        }
+    }
+    std::cout << "Best score: " << best_score << std::endl;
+    std::cout << "Best result: " << best_result.num_inliers / first_frame_processed->size() << ", " << best_result.error << std::endl;
+    std::cout << "Best translation: " << best_result.T_target_source.translation().transpose() << std::endl;
+    std::cout << "Best rotation: " << Eigen::AngleAxisd(best_result.T_target_source.rotation()).angle() * 180.0 / M_PI << std::endl;
+
+    auto init_result = best_result;
 
     // Initialize with scan2map result
     auto first_aligned_pose = utils::PoseUtils::isometryToPoseVector(init_result.T_target_source);
