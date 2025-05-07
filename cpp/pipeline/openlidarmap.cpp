@@ -131,15 +131,15 @@ bool Pipeline::run() {
             });
 
             // Map visualization
-            // auto map = scan2map_registration_->get_map();
-            // auto voxel_cloud = small_gicp::traits::voxel_points(*map);
-            // auto viewer_ptr = std::shared_ptr<guik::LightViewer>(async_viewer,
-            // [](guik::LightViewer *) {}); std::vector<Eigen::Vector4d>
-            // points_copy(voxel_cloud.begin(), voxel_cloud.end()); viewer_ptr->invoke(
-            //     [points = std::move(points_copy), pose = Eigen::Isometry3d::Identity(), viewer =
-            //     viewer_ptr]() { viewer->update_points("map", points,
-            //         guik::FlatWhite(Eigen::Isometry3d::Identity()));
-            //     });
+            auto map = scan2map_registration_->get_map();
+            auto voxel_cloud = small_gicp::traits::voxel_points(*map);
+            auto viewer_ptr = std::shared_ptr<guik::LightViewer>(async_viewer,
+            [](guik::LightViewer *) {}); std::vector<Eigen::Vector4d>
+            points_copy(voxel_cloud.begin(), voxel_cloud.end()); viewer_ptr->invoke(
+                [points = std::move(points_copy), pose = Eigen::Isometry3d::Identity(), viewer =
+                viewer_ptr]() { viewer->update_points("map", points,
+                    guik::FlatWhite(Eigen::Isometry3d::Identity()));
+                });
         }
 
         processing_thread_ = std::thread(&Pipeline::processingLoop, this);
